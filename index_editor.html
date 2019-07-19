@@ -15,30 +15,49 @@
             user-select: none;
         }
 
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 0;
+        }
+
         #graph {
             position: absolute;
-
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            align-items: center;
         }
 
         #liner {
             position: absolute;
             top: 0;
-            bottom: 0;
             left: 0;
-            right: 0;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .level_holder {
+            width: 100%;
+            overflow-x: scroll;
+            overflow-y: visible;
         }
 
         .level {
+            position: relative;
+            width: 200%;
             display: flex;
+            white-space: nowrap;
             justify-content: center;
         }
 
-        .level>.levelText {
+        .levelText {
+            width: 100px;
+            height: 100px;
             position: absolute;
             top: 0;
-            left: 0;
             font-weight: bold;
             font-size: 2em;
         }
@@ -67,7 +86,7 @@
     </style>
 </head>
 
-<body>
+<body style="overflow: hidden;">
     <div id="liner">
     </div>
     <div id="graph">
@@ -77,6 +96,7 @@
         var liner = SVG("liner")
 
         addEventListener("resize", e => {
+            drawLine()
             resizeing()
         })
         var data = [{
@@ -128,21 +148,23 @@
             rank: 3,
             link: []
         }]
+        var levels = []
+        var level_holders = []
         function resizeing() {
             var l = document.getElementById("liner")
             l.style.width = graph.clientWidth + "px";
             l.style.height = graph.clientHeight + "px";
+            level_holders.forEach(x => x.scrollTo(innerWidth/2,0))
         }
         function render() {
             graph.innerHTML = ""
-            liner.clear()
 
             var maxLevel = 0;
             data.forEach((x, idx) => {
                 data[idx].index = idx;
                 if (x.rank > maxLevel) maxLevel = x.rank
             })
-            var levels = []
+
             var startRGB = [76, 175, 80]
             var endRGB = [233, 30, 99]
             var gapRGB = [endRGB[0] - startRGB[0], endRGB[1] - startRGB[1], endRGB[2] - startRGB[2]]
@@ -151,19 +173,30 @@
             }
             for (let i = 0; i <= maxLevel; i++) {
                 var level = document.createElement("div")
+                var level_holder = document.createElement("div")
                 var levelText = document.createElement("div")
 
                 level.classList.add("level")
                 level.style.borderBottom = `1px solid rgba(${getRGB(i)},0.2)`
                 level.style.color = `rgb(${getRGB(i)})`
-                level.style.position = "relative"
+                level.style.background = `rgba(${getRGB(i)},0.1)`
+
+                level_holder.classList.add("level_holder")
+                level_holder.appendChild(level)
 
                 levelText.innerText = i + 1
                 levelText.classList.add("levelText")
                 level.appendChild(levelText)
+                level_holder.addEventListener('scroll', e => {
+                    for(let j = i; j <= maxLevel;j++){
+                        level_holders[j].scrollTo(e.target.scrollLeft,0)
+                    }
+                    drawLine()
+                })
 
-                graph.appendChild(level)
+                graph.appendChild(level_holder)
                 levels.push(level)
+                level_holders.push(level_holder)
             }// 모든 레벨 추가하기
 
 
@@ -177,10 +210,12 @@
                 div.appendChild(document.createTextNode(item.name))
                 levels[item.rank].appendChild(div)
 
-                div.addEventListener('dblclick', e => {
+                div.addEventListener('contextmenu', e => {
+                    e.preventDefault()
                     console.log(index)
                     data[index].link = []
                     render()
+                    drawLine()
                 })
 
                 data[index].prop = div;
@@ -240,21 +275,25 @@
             })
 
 
+        }
+        function drawLine() {
+            liner.clear()
             data.forEach((item, index) => {
                 item.link.forEach(link => {
                     var prevProp = item.prop.children[0]
                     var nextProp = data[link].prop.children[0]
                     var prev = prevProp.getBoundingClientRect()
                     var next = nextProp.getBoundingClientRect()
-                    var prevPointX = scrollX+prev.left + prevProp.offsetWidth / 2;
+                    var prevPointX = scrollX + prev.left + prevProp.offsetWidth / 2;
                     var prevPointY = scrollY + prev.top + prevProp.offsetHeight;
-                    var nextPointX = scrollX+next.left + nextProp.offsetWidth / 2;
+                    var nextPointX = scrollX + next.left + nextProp.offsetWidth / 2;
                     var nextPointY = scrollY + next.top;
                     liner.line(prevPointX, prevPointY, nextPointX, nextPointY).stroke({ width: 1 })
                 })
             });
         }
         render()
+        drawLine()
         resizeing()
         var currentLine;
         var startItem;
@@ -271,18 +310,18 @@
         })
         addEventListener('mousemove', e => {
             if (currentLine)
-                currentLine.plot(startPoint[0], startPoint[1], scrollX+e.clientX, scrollY + e.clientY)
+                currentLine.plot(startPoint[0], startPoint[1], scrollX + e.clientX, scrollY + e.clientY)
         })
         addEventListener('mouseup', e => {
             if (currentLine) {
-                currentLine.plot(startPoint[0], startPoint[1], scrollX+e.clientX, scrollY + e.clientY)
+                currentLine.plot(startPoint[0], startPoint[1], scrollX + e.clientX, scrollY + e.clientY)
                 currentLine.remove()
                 currentLine = null
                 if (e.target.classList.contains("item")) {
                     var target = e.target
                     if (startItem.controllter.index != target.controllter.index)
                         data[startItem.controllter.index].link.push(target.controllter.index)
-                    render()
+                    drawLine()
                 }
             }
         });
