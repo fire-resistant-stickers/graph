@@ -322,7 +322,7 @@
 						scrollY +
 						startItem.children[0].getBoundingClientRect().top +
 						startItem.children[0].offsetHeight;
-                    endPoint[0] = startPoint[0];
+					endPoint[0] = startPoint[0];
 					endPoint[1] = startPoint[1];
 					currentLine = liner
 						.line(x, y, x, y)
@@ -368,9 +368,20 @@
 								startItem.controllter.index !=
 								target.controllter.index
 							)
+								var idx = data[
+									startItem.controllter.index
+								].link.indexOf(target.controllter.index);
+							if (idx == -1) {
 								data[startItem.controllter.index].link.push(
 									target.controllter.index
 								);
+							} else {
+								data[startItem.controllter.index].link.splice(
+									idx,
+									1
+								);
+							}
+
 							drawLine();
 						}
 					}
