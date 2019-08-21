@@ -65,7 +65,7 @@
 		</style>
 	</head>
 
-	<body style="overflow: hidden;">
+	<body>
 		<div id="liner"></div>
 		<div id="graph"></div>
 		<script>
@@ -322,6 +322,8 @@
 						scrollY +
 						startItem.children[0].getBoundingClientRect().top +
 						startItem.children[0].offsetHeight;
+                    endPoint[0] = startPoint[0];
+					endPoint[1] = startPoint[1];
 					currentLine = liner
 						.line(x, y, x, y)
 						.stroke({ width: 5, color: "rgba(100,100,100,0.3)" });
