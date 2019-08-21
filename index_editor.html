@@ -367,21 +367,20 @@
 							if (
 								startItem.controllter.index !=
 								target.controllter.index
-							)
+							) {
 								var idx = data[
 									startItem.controllter.index
 								].link.indexOf(target.controllter.index);
-							if (idx == -1) {
-								data[startItem.controllter.index].link.push(
-									target.controllter.index
-								);
-							} else {
-								data[startItem.controllter.index].link.splice(
-									idx,
-									1
-								);
+								if (idx == -1) {
+									data[startItem.controllter.index].link.push(
+										target.controllter.index
+									);
+								} else {
+									data[
+										startItem.controllter.index
+									].link.splice(idx, 1);
+								}
 							}
-
 							drawLine();
 						}
 					}
