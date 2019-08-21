@@ -322,7 +322,9 @@
 						scrollY +
 						startItem.children[0].getBoundingClientRect().top +
 						startItem.children[0].offsetHeight;
-					currentLine = liner.line(x, y, x, y).stroke({ width: 1 });
+					currentLine = liner
+						.line(x, y, x, y)
+						.stroke({ width: 5, color: "rgba(100,100,100,0.3)" });
 				}
 			}
 			function eventMove(e, x, y) {
